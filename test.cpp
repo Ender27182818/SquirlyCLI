@@ -25,6 +25,16 @@ void perror_exit(char* error)
 	handler(9);
 }
 
+char getASCII( int code )
+{
+	switch( code ) {
+	case 30: return 'a';
+	case 48: return 'b';
+	case 46: return 'c';
+	default: return ' ';
+	}
+}
+
 int main(int argc, char* argv[])
 {
 	// Setup check
@@ -72,9 +82,11 @@ int main(int argc, char* argv[])
 		}
 		for( int i = 0; i < events_read; ++i ) {
 			input_event* current_event = events + i;
-			printf( "Event: %d %d %d\n", current_event->type, current_event->code, current_event->value );
+			// Ignore all but key-down events:
+			if( current_event->type == EV_KEY )
+				printf( "Event: type %d code %d value %d:   %c\n", current_event->type, current_event->code, current_event->value, getASCII( current_event->code ) );
+			
 		}
-		printf("---------\n");
 	}
 
 	return 0;
