@@ -12,9 +12,11 @@
 #include <sys/time.h>
 #include <termios.h>
 #include <signal.h>
+
 #include <string>
 #include <sstream>
 #include <iostream>
+#include <fstream>
 
 void handler(int sig)
 {
@@ -36,6 +38,15 @@ char getASCII( int code )
 	else
 		return '\0';
 
+}
+
+/// @brief Does all the work for a transaction to be fully recorded
+void commitTransaction( const std::string& upc )
+{
+	// Open the transaction file
+	std::ofstream f( "/home/eli/squirly.transactions", std::ios_base::app );
+	f << upc << std::endl;
+	f.close();
 }
 
 int main(int argc, char* argv[])
@@ -91,11 +102,11 @@ int main(int argc, char* argv[])
 				if( current_event->value == 1 ) {
 					char c = getASCII( current_event->code );
 					if( c == '\n' ) {
-						std::cout << "Got: " << buffer.str() << std::endl;
+						commitTransaction( buffer.str() );
 						buffer.str("");
 						buffer.clear();
 					} else if ( c == ' ' ) {
-						printf( "Event: type %d code %d value %d:   %c\n", current_event->type, current_event->code, current_event->value, getASCII( current_event->code ) );
+						//printf( "Event: type %d code %d value %d:   %c\n", current_event->type, current_event->code, current_event->value, getASCII( current_event->code ) );
 					} else {
 						buffer << c;
 					}
