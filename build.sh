@@ -1,2 +1,2 @@
 #!/bin/sh
-g++ test.cpp -o SquirlyCLI
+g++ SquirlyCLI.cpp -o SquirlyCLI
