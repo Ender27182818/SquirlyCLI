@@ -12,6 +12,9 @@
 #include <sys/time.h>
 #include <termios.h>
 #include <signal.h>
+#include <string>
+#include <sstream>
+#include <iostream>
 
 void handler(int sig)
 {
@@ -25,26 +28,14 @@ void perror_exit(char* error)
 	handler(9);
 }
 
+const char ASCII_CHARACTERS[] = "  12345678" "90-= 	QWER" "TYUIOP[]\n " "ASDFGHJKL;" "'` \\ZXCVBN" "M,./ *    " "          " " 789-456+1" "23        " "        // "; 
 char getASCII( int code )
 {
-	switch( code ) {
-	case 30: return 'a';
-	case 48: return 'b';
-	case 46: return 'c';
-	case 28:
-	case 96: return '\n';
-	case 11: return '0';
-	case 10: return '9';
-	case 9: return '8';
-	case 8: return '7';
-	case 7: return '6';
-	case 6: return '5';
-	case 5: return '4';
-	case 4: return '3';
-	case 3: return '2';
-	case 2: return '1';
-	default: return ' ';
-	}
+	if( code > 0 && code < (sizeof(ASCII_CHARACTERS)/sizeof(ASCII_CHARACTERS[0])) )
+		return ASCII_CHARACTERS[code];
+	else
+		return '\0';
+
 }
 
 int main(int argc, char* argv[])
@@ -84,6 +75,7 @@ int main(int argc, char* argv[])
 	
 	// Read events
 	struct input_event events[64];	
+	std::ostringstream buffer;
 	while(1) {
 		int bytes_read = read(file_descriptor, events, sizeof(input_event) * 64);
 		int events_read = bytes_read / sizeof(input_event);
@@ -95,8 +87,21 @@ int main(int argc, char* argv[])
 		for( int i = 0; i < events_read; ++i ) {
 			input_event* current_event = events + i;
 			// Ignore all but key-down events:
-			if( current_event->type == EV_KEY )
-				printf( "Event: type %d code %d value %d:   %c\n", current_event->type, current_event->code, current_event->value, getASCII( current_event->code ) );
+			if( current_event->type == EV_KEY ) {
+				if( current_event->value == 1 ) {
+					char c = getASCII( current_event->code );
+					if( c == '\n' ) {
+						std::cout << "Got: " << buffer.str() << std::endl;
+						buffer.str("");
+						buffer.clear();
+					} else if ( c == ' ' ) {
+						printf( "Event: type %d code %d value %d:   %c\n", current_event->type, current_event->code, current_event->value, getASCII( current_event->code ) );
+					} else {
+						buffer << c;
+					}
+					
+				}
+			}
 			
 		}
 	}
