@@ -107,8 +107,11 @@ int main(int argc, char* argv[])
 	struct stat file_info;
 	int return_code = ::stat( device, &file_info );
 	if( return_code != 0 ) {
-		log << device <<  " is not a valid device." << std::endl;
-		exit(1);
+		log << device <<  " is not a valid device. Waiting until the device becomes valid..." << std::endl;
+		while( ::stat( device, &file_info ) != 0 )
+		{
+			::sleep( 1 );
+		}
 	}
 
 	// Open Device
