@@ -12,6 +12,7 @@
 #include <sys/time.h>
 #include <termios.h>
 #include <signal.h>
+#include <AL/alut.h>
 
 #include <string>
 #include <sstream>
@@ -50,6 +51,17 @@ char getASCII( int code )
 
 }
 
+void playSound()
+{
+	ALuint helloBuffer, helloSource;
+	helloBuffer = alutCreateBufferFromFile("sounds/deposited.wav");
+	alGenSources(1, &helloSource);
+	alSourcei(helloSource, AL_BUFFER, helloBuffer);
+	alSourcePlay(helloSource);
+	alutSleep(2);
+	return;
+}
+
 /// @brief Does all the work for a transaction to be fully recorded
 void commitTransaction( const std::string& upc )
 {
@@ -64,6 +76,9 @@ void commitTransaction( const std::string& upc )
 	std::ofstream f( TRANSACTION_FILE, std::ios_base::app );
 	f << time_buffer << upc << std::endl;
 	f.close();
+
+	// Play the sound
+	playSound();
 }
 
 /// @brief Cause this process to become a daemon
@@ -78,6 +93,8 @@ void daemonize() {
 /// @brief The main function of the program
 int main(int argc, char* argv[])
 {
+	alutInit(&argc, argv);
+
 	bool run_daemon = true;
 	// parse the commandline args
 	for( int i = 0; i < argc; ++i ) {
@@ -162,5 +179,6 @@ int main(int argc, char* argv[])
 		}
 	}
 
+	alutExit();
 	return 0;
 }
