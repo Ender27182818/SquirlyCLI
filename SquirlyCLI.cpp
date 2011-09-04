@@ -224,10 +224,16 @@ int main(int argc, char* argv[])
 		for( int i = 0; i < events_read; ++i ) {
 			input_event* current_event = events + i;
 			// Ignore all but key-down events:
+			std::ostringstream log_msg2;
+			log_msg2 << "Got event type " << current_event->type << " value " << current_event->value << " code " << current_event->code << std::endl;
+			log( log_msg2.str() );
 			if( current_event->type == EV_KEY ) {
 				if( current_event->value == 1 ) {
-					char c = getASCII( current_event->code );
-					if( c == '\n' ) {
+					char c = getASCII( current_event->code );	
+					std::ostringstream log_msg;
+					log_msg << "From scanner '" << c << "'" << std::endl;
+					log(log_msg.str());
+					 if( c == '\n' ) {
 						commitTransaction( buffer.str() );
 						buffer.str("");
 						buffer.clear();
